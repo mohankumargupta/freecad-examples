@@ -43,14 +43,21 @@ line6 = sketch_front.addGeometry(Part.LineSegment(App.Vector(0,10,0), App.Vector
 
 
 # Pad
-pad = doc.addObject("PartDesign::Pad", "Pad")
+pad_name = "FrontPad2"
+pad = doc.addObject("PartDesign::Pad", pad_name)
 pad.Profile = sketch_front
 pad.Length = 40
+p = doc.getObject(pad_name)
+p.Midplane = True # Symmetric 
+
+
 doc.recompute()
 
 body.addObject(pad)
+# sketch_front.Visibility = False
+# body.Visibility = True
+# pad.Visibility = True
 
-#body.Tip = sketch_front
 doc.recompute()
 save_as(doc, __file__)
 
