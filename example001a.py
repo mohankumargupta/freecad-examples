@@ -48,7 +48,7 @@ pad.Profile = sketch_front
 pad.Length = 40
 doc.recompute()
 
-body.addObject(sketch_front)
+body.addObject(pad)
 
 #body.Tip = sketch_front
 doc.recompute()
