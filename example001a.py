@@ -7,7 +7,7 @@ from save import save_as
 doc = App.newDocument()
 body = doc.addObject('PartDesign::Body', 'Body')
 sketch_front = doc.addObject('Sketcher::SketchObject', 'Sketch')
-sketch_front.Label = "SketchFront"
+#sketch_front.Label = "SketchFront"
 yz_plane = doc.getObject('YZ_Plane')
 sketch_front.AttachmentSupport = [(yz_plane, '')]
 sketch_front.MapMode = 'FlatFace'
@@ -43,20 +43,18 @@ line6 = sketch_front.addGeometry(Part.LineSegment(App.Vector(0,10,0), App.Vector
 
 
 # Pad
-pad_name = "FrontPad2"
+pad_name = "Pad"
 pad = doc.addObject("PartDesign::Pad", pad_name)
 pad.Profile = sketch_front
 pad.Length = 40
 p = doc.getObject(pad_name)
 p.Midplane = True # Symmetric 
+#doc.recompute()
+#pad.Visibility = True
+#body.Visibility = True
+#body.addObject(pad)
+sketch_front.Visibility = False
 
-
-doc.recompute()
-
-body.addObject(pad)
-# sketch_front.Visibility = False
-# body.Visibility = True
-# pad.Visibility = True
 
 doc.recompute()
 save_as(doc, __file__)
