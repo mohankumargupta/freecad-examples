@@ -36,9 +36,14 @@ def create_slot(doc, sketch, length=40, width=10, depth=5, position=App.Vector(5
     sketch.addGeometry(Part.ArcOfCircle(
         Part.Circle(App.Vector(0, 0, 0), App.Vector(0, 0, 1), radius),
         1.570800, 4.712393))  # Left end: -90 to 90 degrees
+    # sketch.addGeometry(Part.ArcOfCircle(
+    #     Part.Circle(App.Vector(length, 0, 0), App.Vector(0, 0, 1), radius),
+    #     1.570800, 4.712393))   # Right end: 90 to 270 degrees
     sketch.addGeometry(Part.ArcOfCircle(
         Part.Circle(App.Vector(length, 0, 0), App.Vector(0, 0, 1), radius),
-        1.570800, 4.712393))   # Right end: 90 to 270 degrees
+         4.712393, 7.853985))   # Right end: 90 to 270 degrees
+
+
 
     # Connect semicircles with lines
     sketch.addGeometry(Part.LineSegment(
