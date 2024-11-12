@@ -42,9 +42,15 @@ line6 = sketch_front.addGeometry(Part.LineSegment(App.Vector(0,10,0), App.Vector
 # sketch_front.addConstraint(Sketcher.Constraint('Distance', line2, 15))
 
 
+# Pad
+pad = doc.addObject("PartDesign::Pad", "Pad")
+pad.Profile = sketch_front
+pad.Length = 40
+doc.recompute()
 
-# Set the body's tip to the sketch
-body.Tip = sketch_front
+body.addObject(sketch_front)
+
+#body.Tip = sketch_front
 doc.recompute()
 save_as(doc, __file__)
 
