@@ -21,7 +21,7 @@ def create_slot(doc, sketch, length=40, width=10, depth=5, position=App.Vector(5
     
     # Add geometry to create slot profile
     # Center line
-    sketch.addGeometry(Part.LineSegment(App.Vector(0, 0, 0), App.Vector(length, 0, 0)))
+    sketch.addGeometry(Part.LineSegment(App.Vector(0, 0, 0), App.Vector(length, 0, 0)), True)
     
     # Create semicircles at ends
     # radius = width / 2
