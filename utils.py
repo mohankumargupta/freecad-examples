@@ -22,6 +22,9 @@ class Pen:
             line = Part.LineSegment(self.position, new_position)
             line_index = self.sketch.addGeometry(line,False)
             
+            #if line_index == 0:
+            #    self.sketch.addConstraint(Sketcher.Constraint('PointOnObject',0,1,-2))
+                
             
             # if is_Horizontal:
             #    self.sketch.addConstraint(Sketcher.Constraint('Horizontal', line_index))

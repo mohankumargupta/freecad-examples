@@ -20,6 +20,11 @@ pen.up(10)
 pen.left(45)
 pen.up(10)
 
+sketch.addConstraint(Sketcher.Constraint('PointOnObject',0,1,-2))
+sketch.addConstraint(Sketcher.Constraint('Horizontal', 0))
+sketch.addConstraint(Sketcher.Constraint('Distance', 0,1,0,2,55))
+sketch.addConstraint(Sketcher.Constraint('DistanceY', -1, 1, 0, 1, 20))
+
 doc.recompute()
 
 
