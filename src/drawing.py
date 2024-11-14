@@ -111,6 +111,31 @@ def makeRectangle(sketch, corner, lengths):
         sketch.addConstraint(Sketcher.Constraint("Distance", i + 1, vmax - vmin))
         sketch.addConstraint(Sketcher.Constraint("Distance", i + 0, hmax - hmin))
 
-
-
-
+def makeCenterRectangle(sketch, center, lengths):
+    """
+    Creates a rectangle centered at a given point.
+    
+    Parameters:
+    sketch: The FreeCAD sketch object
+    center: Tuple (x, y) representing the center point
+    lengths: Tuple (width, height) representing rectangle dimensions
+    """
+    # Calculate corner point from center and dimensions
+    corner_x = center[0] - lengths[0]/2
+    corner_y = center[1] - lengths[1]/2
+    corner = (corner_x, corner_y)
+    
+    # Use existing makeRectangle function with calculated corner
+    makeRectangle(sketch, corner, lengths)
+    
+    # The index of the last geometry before our rectangle
+    i = int(sketch.GeometryCount) - 4
+    
+    # Add constraints to ensure center point
+    # Constrain horizontal center
+    sketch.addConstraint(Sketcher.Constraint("DistanceX", i + 0, 1, center[0]))
+    sketch.addConstraint(Sketcher.Constraint("DistanceX", i + 2, 1, center[0]))
+    
+    # Constrain vertical center
+    sketch.addConstraint(Sketcher.Constraint("DistanceY", i + 1, 1, center[1]))
+    sketch.addConstraint(Sketcher.Constraint("DistanceY", i + 3, 1, center[1]))

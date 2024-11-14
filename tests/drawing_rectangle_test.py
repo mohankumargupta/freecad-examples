@@ -3,7 +3,7 @@ from FreeCAD import Vector
 import Part # type: ignore
 import pytest  
 
-from drawing import makeRectangle
+from drawing import makeRectangle, makeCenterRectangle
 
 #Vector=App.Vector
 
@@ -45,5 +45,28 @@ def test_rectangle(freecad_document):
     makeRectangle(sketch, (0,0), (100, 50))
     two_polylines_equal(expected_rectangle, sketch.Geometry)
 
+def test_center_rectangle(freecad_document):
+    center = Vector(50, 25, 0)
+    lengths = (100, 50)
+    
+    # Define the expected points for a rectangle centered at (50, 25)
+    expected_rectangle_points = [
+        Vector(0, 0, 0),
+        Vector(100, 0, 0),
+        Vector(100, 50, 0),
+        Vector(0, 50, 0)
+    ]
+
+    # Define the expected rectangle as line segments
+    expected_rectangle = [
+        Part.LineSegment(expected_rectangle_points[i], expected_rectangle_points[(i+1) % 4])
+        for i in range(len(expected_rectangle_points))
+    ]
+
+    sketch = freecad_document.addObject('Sketcher::SketchObject', 'Sketch')
+    makeCenterRectangle(sketch, center, lengths)
+
+    # Use the same comparison function
+    two_polylines_equal(expected_rectangle, sketch.Geometry)
     
 
