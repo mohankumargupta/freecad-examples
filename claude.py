@@ -1,6 +1,6 @@
 import unittest
 import FreeCAD
-import Part
+import Part # type: ignore
 import math
 
 class TestGeometryComparison(unittest.TestCase):

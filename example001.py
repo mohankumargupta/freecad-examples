@@ -1,13 +1,17 @@
 import FreeCAD
 import Sketcher # type: ignore
 import Part # type: ignore
+from document import save_as
+
 
 # Create a new document
 doc = FreeCAD.newDocument()
+body = doc.addObject('PartDesign::Body', 'Body')
+
 
 # Create a new sketch
 sketch = doc.addObject('Sketcher::SketchObject', 'Rectangle')
-
+body.addObject(sketch)
 # Add the geometry for a rectangle
 # Parameters: starting point (0,0), width = 100mm, height = 50mm
 sketch.addGeometry(Part.LineSegment(FreeCAD.Vector(0,0,0), FreeCAD.Vector(100,0,0)), False)  # bottom line
@@ -33,7 +37,19 @@ sketch.addConstraint(Sketcher.Constraint('Distance', 0, 100.0))  # width = 100mm
 sketch.addConstraint(Sketcher.Constraint('Distance', 1, 50.0))   # height = 50mm
 
 # Recompute the sketch
-doc.recompute()
+#doc.recompute()
+
+pad = doc.addObject('PartDesign::Pad','Pad')
+pad.Profile = sketch
+pad.Length = 40
+body.addObject(pad)
+#doc.recompute()
+pad.Visibility = True
+body.Visibility = True
+sketch.Visibility = True
+
+#doc.recompute()
 
 # Save the document (optional)
-# doc.saveAs("rectangle.FCStd")
+
+save_as(doc, __file__)
