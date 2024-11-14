@@ -1,6 +1,6 @@
 # Example how to use the basic sketcher tools
-from Sketcher import *
-from Part import *
+from Sketcher import *  # type: ignore
+from Part import * # type: ignore
 from FreeCAD import *
 import FreeCAD as App
 

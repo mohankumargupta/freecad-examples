@@ -8,9 +8,9 @@ import FreeCAD as App
 import FreeCADGui
 FreeCADGui.showMainWindow()
 
-import Import
-import ImportGui
-import Draft
+import Import  # type: ignore
+import ImportGui # type: ignore
+import Draft # type: ignore
 App.newDocument("Unnamed")
 App.setActiveDocument("Unnamed")
 ImportGui.insert(inputFile,"Unnamed")

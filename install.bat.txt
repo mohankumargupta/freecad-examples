@@ -1,0 +1,1 @@
+ C:/Users/boo/Downloads/FreeCAD_weekly-builds-39153-conda-Windows-x86_64-py311/bin/python.exe -m pip install -e .
