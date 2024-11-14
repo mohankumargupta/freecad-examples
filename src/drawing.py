@@ -68,3 +68,10 @@ up = _turtle['up']
 down = _turtle['down']
 left = _turtle['left']
 right = _turtle['right']
+
+def makeRectangle(x, y, width, height):
+    pass
+
+
+
+
