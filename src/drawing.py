@@ -139,3 +139,10 @@ def makeCenterRectangle(sketch, center, lengths):
     # Constrain vertical center
     sketch.addConstraint(Sketcher.Constraint("DistanceY", i + 1, 1, center[1]))
     sketch.addConstraint(Sketcher.Constraint("DistanceY", i + 3, 1, center[1]))
+
+def makeCircle(sketch, center, radius):
+    i = int(sketch.GeometryCount)
+    sketch.addGeometry(Part.Circle(App.Vector(*center), App.Vector(0, 0, 1), radius), False)
+    sketch.addConstraint(Sketcher.Constraint("Radius", i, radius))
+    sketch.addConstraint(Sketcher.Constraint("DistanceX", i, 3, center[0]))
+    sketch.addConstraint(Sketcher.Constraint("DistanceY", i, 3, center[1]))
