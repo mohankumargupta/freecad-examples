@@ -28,3 +28,11 @@ def _turtle_functions():
 
     def right(distance):
         pass    
+
+_turtle = _turtle_functions()
+penup = _turtle['penup']
+pendown = _turtle['pendown']
+up = _turtle['up']
+down = _turtle['down']
+left = _turtle['left']
+right = _turtle['right']
