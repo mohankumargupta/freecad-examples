@@ -13,7 +13,7 @@ def create():
     sketch.AttachmentSupport = [(yz_plane, '')]
     sketch.MapMode = 'FlatFace'
 
-    makeCenterRectangle(sketch, (0,0), (100,50))
+    makeCenterRectangle(sketch, (50,45), (100,50))
 
     doc.recompute()
     save_as(doc, __file__)
