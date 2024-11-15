@@ -223,11 +223,11 @@ def makeHorizontalLine(sketch, start_point, length):
     sketch.addConstraint(Sketcher.Constraint("Horizontal", i))
     
     # Fix start point
-    sketch.addConstraint(Sketcher.Constraint("DistanceX", i, 1, start.x))
-    sketch.addConstraint(Sketcher.Constraint("DistanceY", i, 1, start.y))
+    #sketch.addConstraint(Sketcher.Constraint("DistanceX", i, 1, start.x))
+    #sketch.addConstraint(Sketcher.Constraint("DistanceY", i, 1, start.y))
     
     # Set length
-    sketch.addConstraint(Sketcher.Constraint("Distance", i, length))
+    #sketch.addConstraint(Sketcher.Constraint("Distance", i, length))
     
     return i  # Return the index of the created geometry
 
@@ -263,11 +263,11 @@ def makeVerticalLine(sketch, start_point, length):
     sketch.addConstraint(Sketcher.Constraint("Vertical", i))
     
     # Fix start point
-    sketch.addConstraint(Sketcher.Constraint("DistanceX", i, 1, start.x))
-    sketch.addConstraint(Sketcher.Constraint("DistanceY", i, 1, start.y))
+    #sketch.addConstraint(Sketcher.Constraint("DistanceX", i, 1, start.x))
+    #sketch.addConstraint(Sketcher.Constraint("DistanceY", i, 1, start.y))
     
     # Set length
-    sketch.addConstraint(Sketcher.Constraint("Distance", i, length))
+    #sketch.addConstraint(Sketcher.Constraint("Distance", i, length))
     
     return i  # Return the index of the created geometry
 
