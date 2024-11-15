@@ -16,7 +16,7 @@ Gui.runCommand('Std_OrthographicCamera',1)
 view = Gui.activeDocument().activeView()
 view.viewIsometric()
 view.fitAll()
-
+App.ActiveDocument.getObject("Body").Visibility = True
 
 
 
