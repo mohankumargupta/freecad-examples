@@ -19,6 +19,20 @@ def create():
     l3 = makeHorizontalLine(sketch, (150, 120), -150)
     l4 = makeVerticalLine(sketch, (0,120), -100)
 
+    sketch.addConstraint(Sketcher.Constraint("Coincident", 0,2, 1,1))
+    sketch.addConstraint(Sketcher.Constraint("Coincident", 1,2, 2,1))
+    sketch.addConstraint(Sketcher.Constraint("Coincident", 2,2, 3,1))
+    sketch.addConstraint(Sketcher.Constraint("Coincident", 3,2, 0,1))
+
+    sketch.addConstraint(Sketcher.Constraint("Distance", 0,1,0,2,150))
+    sketch.addConstraint(Sketcher.Constraint("Distance", 1,1,1,2,100))
+
+    sketch.addConstraint(Sketcher.Constraint("PointOnObject", 0,1,-2))
+    sketch.addConstraint(Sketcher.Constraint("DistanceY", 0,1,20))
+
+
+
+
     doc.recompute()
     save_as(doc, __file__)
     return doc
