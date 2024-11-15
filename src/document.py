@@ -33,7 +33,8 @@ def createSketch(doc:App.Document, name, plane: Plane = Plane.XY):
 def save_as(doc, fullpath):
     path = Path(fullpath)
     filename_without_extension = path.with_suffix("").name
-    old = Path(f"{filename_without_extension}.FCStd")
-    if old.exists():
-        old.unlink()
-    doc.saveAs(f"{filename_without_extension}.FCStd")
+    save_path = path.with_name(f"{filename_without_extension}.FCStd")
+    
+    if save_path.exists():
+        save_path.unlink()
+    doc.saveAs(str(save_path))

@@ -2,7 +2,7 @@ import FreeCAD as App
 import FreeCADGui as Gui
 
 
-freecad_file = "examples/example001.FCstd"
+freecad_file = "examples/example004.FCstd"
 #freecad_file = "example002a.FCstd"
 # Open FreeCAD
 
