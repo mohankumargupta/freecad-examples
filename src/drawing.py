@@ -1,5 +1,5 @@
 import FreeCAD as App
-from FreeCAD import Base # type: ignore
+from FreeCAD import Vector # type: ignore
 import Part # type: ignore
 from Part import LineSegment # type: ignore
 import Sketcher # type: ignore
@@ -7,12 +7,14 @@ import Sketcher # type: ignore
 import math
 
 #LineSegment = Part.LineSegment
-Vector2D = Base.Vector2d
+
 
 def _polyline_functions():
     context = {
+        'sketch': None,
         'pen_state': 'up',
         'position': {'x': 0, 'y': 0},
+        'polyline': [],
         'polyline_points': [],
         'geometries': [],
         'constraints': []
@@ -32,30 +34,38 @@ def _polyline_functions():
         pass
 
 
-    def pendown(x,y):
+    def pendown(sketch, x,y):
+        context['sketch'] = sketch
         context['position']['x'] = x
         context['position']['y'] = y
-        context['polyline_points'].append(
-            LineSegment(Vector2D(x,y))
-        )
+
 
     def penup():
-        pass
+        context['sketch'].Geometry = context['polyline']
+        
 
-    def move():
-        pass
+    def move(distance_x, distance_y):
+        x = context['position']['x']
+        y = context['position']['y']
+        context['polyline'].append(
+            LineSegment(Vector(x,y), Vector(x + distance_x,y+distance_y))
+        )
+        context['position']['x'] = x + distance_x
+        context['position']['y'] = y + distance_y
+
 
     def up(distance):
-        pass
+        move(0,distance)
+
 
     def down(distance):
-        pass
+        move(0,-distance)
 
     def left(distance):
-        pass
+        move(-distance, 0)
 
     def right(distance):
-        pass    
+        move(distance, 0)  
 
     return {
         'penup': penup,
