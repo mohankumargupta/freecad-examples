@@ -102,17 +102,23 @@ def makeRectangle(sketch, corner, lengths):
     sketch.addConstraint(Sketcher.Constraint("Vertical", i + 1))
     sketch.addConstraint(Sketcher.Constraint("Vertical", i + 3))
 
-    # Fix the bottom left corner of the rectangle
-    sketch.addConstraint(Sketcher.Constraint("DistanceX", i + 2, 2, corner[0]))
-    sketch.addConstraint(Sketcher.Constraint("DistanceY", i + 2, 2, corner[1]))
+    sketch.addConstraint(Sketcher.Constraint("Distance", 0,1,0,2,lengths[0]))
+    sketch.addConstraint(Sketcher.Constraint("Distance", 1,1,1,2,lengths[1]))
 
-    # add dimensions
-    if lengths[0] == lengths[1]:
-        sketch.addConstraint(Sketcher.Constraint("Equal", i + 2, i + 3))
-        sketch.addConstraint(Sketcher.Constraint("Distance", i + 0, hmax - hmin))
-    else:
-        sketch.addConstraint(Sketcher.Constraint("Distance", i + 1, vmax - vmin))
-        sketch.addConstraint(Sketcher.Constraint("Distance", i + 0, hmax - hmin))
+    sketch.addConstraint(Sketcher.Constraint("DistanceX", 0, 1, corner[1]))
+    sketch.addConstraint(Sketcher.Constraint("DistanceY", 0, 1, corner[0]))
+
+    # # Fix the bottom left corner of the rectangle
+    # sketch.addConstraint(Sketcher.Constraint("DistanceX", i + 2, 2, corner[0]))
+    # sketch.addConstraint(Sketcher.Constraint("DistanceY", i + 2, 2, corner[1]))
+
+    # # add dimensions
+    # if lengths[0] == lengths[1]:
+    #     sketch.addConstraint(Sketcher.Constraint("Equal", i + 2, i + 3))
+    #     sketch.addConstraint(Sketcher.Constraint("Distance", i + 0, hmax - hmin))
+    # else:
+    #     sketch.addConstraint(Sketcher.Constraint("Distance", i + 1, vmax - vmin))
+    #     sketch.addConstraint(Sketcher.Constraint("Distance", i + 0, hmax - hmin))
 
 def makeCenterRectangle(sketch, center, lengths):
     """
