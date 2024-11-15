@@ -97,6 +97,7 @@ def makeRectangle(sketch, corner, lengths):
     sketch.addConstraint(Sketcher.Constraint("Coincident", i + 1, 2, i + 2, 1))
     sketch.addConstraint(Sketcher.Constraint("Coincident", i + 2, 2, i + 3, 1))
     sketch.addConstraint(Sketcher.Constraint("Coincident", i + 3, 2, i + 0, 1))
+
     sketch.addConstraint(Sketcher.Constraint("Horizontal", i + 0))
     sketch.addConstraint(Sketcher.Constraint("Horizontal", i + 2))
     sketch.addConstraint(Sketcher.Constraint("Vertical", i + 1))
@@ -105,20 +106,19 @@ def makeRectangle(sketch, corner, lengths):
     sketch.addConstraint(Sketcher.Constraint("Distance", 0,1,0,2,lengths[0]))
     sketch.addConstraint(Sketcher.Constraint("Distance", 1,1,1,2,lengths[1]))
 
-    sketch.addConstraint(Sketcher.Constraint("DistanceX", 0, 1, corner[1]))
-    sketch.addConstraint(Sketcher.Constraint("DistanceY", 0, 1, corner[0]))
+    if hmin == 0:
+        sketch.addConstraint(Sketcher.Constraint("PointOnObject", 2,2, -2))
 
-    # # Fix the bottom left corner of the rectangle
-    # sketch.addConstraint(Sketcher.Constraint("DistanceX", i + 2, 2, corner[0]))
-    # sketch.addConstraint(Sketcher.Constraint("DistanceY", i + 2, 2, corner[1]))
+    else:
+        sketch.addConstraint(Sketcher.Constraint("DistanceX", 2, 2, hmin))
 
-    # # add dimensions
-    # if lengths[0] == lengths[1]:
-    #     sketch.addConstraint(Sketcher.Constraint("Equal", i + 2, i + 3))
-    #     sketch.addConstraint(Sketcher.Constraint("Distance", i + 0, hmax - hmin))
-    # else:
-    #     sketch.addConstraint(Sketcher.Constraint("Distance", i + 1, vmax - vmin))
-    #     sketch.addConstraint(Sketcher.Constraint("Distance", i + 0, hmax - hmin))
+    if vmin == 0:
+        sketch.addConstraint(Sketcher.Constraint("PointOnObject", 2,2, -1))
+        
+    else:    
+        sketch.addConstraint(Sketcher.Constraint("DistanceY", 2, 2, vmin))
+
+    
 
 def makeCenterRectangle(sketch, center, lengths):
     """
@@ -142,12 +142,12 @@ def makeCenterRectangle(sketch, center, lengths):
     
     # Add constraints to ensure center point
     # Constrain horizontal center
-    sketch.addConstraint(Sketcher.Constraint("DistanceX", i + 0, 1, center[0]))
-    sketch.addConstraint(Sketcher.Constraint("DistanceX", i + 2, 1, center[0]))
+    #sketch.addConstraint(Sketcher.Constraint("DistanceX", i + 0, 1, center[0]))
+    #sketch.addConstraint(Sketcher.Constraint("DistanceX", i + 2, 1, center[0]))
     
     # Constrain vertical center
-    sketch.addConstraint(Sketcher.Constraint("DistanceY", i + 1, 1, center[1]))
-    sketch.addConstraint(Sketcher.Constraint("DistanceY", i + 3, 1, center[1]))
+    #sketch.addConstraint(Sketcher.Constraint("DistanceY", i + 1, 1, center[1]))
+    #sketch.addConstraint(Sketcher.Constraint("DistanceY", i + 3, 1, center[1]))
 
 def makeCircle(sketch, center, radius):
     i = int(sketch.GeometryCount)
