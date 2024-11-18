@@ -1,9 +1,15 @@
+
+
 import FreeCAD as App
 import FreeCADGui as Gui
 
+
+
 #from example004 import create
 #from example005 import create
-from example006 import create
+#from example006 import create
+from stencil import create
+
 
 
 #freecad_file = "examples/example004.FCstd"
@@ -22,7 +28,8 @@ view.viewIsometric()
 view.fitAll()
 App.ActiveDocument.getObject("Body").Visibility = True
 
-
+Gui.Selection.addSelection('Unnamed','Body','Origin.')
+Gui.Selection.clearSelection()
 
 
 #view = doc.ActiveView
