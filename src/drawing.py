@@ -492,3 +492,56 @@ def makeCenterArc(sketch, center_point, radius, start_angle, end_angle):
     sketch.addConstraint(Sketcher.Constraint("DistanceY", i, 2, end.y))    # End Y position
     
     return i  # Return the index of the created geometry    
+
+
+def makeArcTwoPoints(sketch, start_point, end_point, radius):
+    """
+    Creates an arc in the given sketch defined by two points and a radius.
+
+    :param sketch: The FreeCAD Sketch object to which the arc will be added.
+    :param point1: A tuple (x1, y1) defining the first point of the arc.
+    :param point2: A tuple (x2, y2) defining the second point of the arc.
+    :param radius: The radius of the arc.
+    :return: None
+    """
+    # Convert points to FreeCAD Vectors
+    p1 = Vector(start_point)
+    p2 = Vector(end_point)
+
+    # Calculate the midpoint and chord length
+    midpoint = (p1 + p2) * 0.5
+    chord_length = (p2 - p1).Length
+
+    # Check if the radius is valid
+    if abs(radius) < chord_length / 2:
+        raise ValueError("The radius is too small to form an arc with the given points.")
+
+    # Calculate the perpendicular distance from the midpoint to the arc center
+    perpendicular_distance = (radius**2 - (chord_length / 2)**2)**0.5
+
+    # Determine the direction of the perpendicular vector
+    direction = (p2 - p1).cross(Vector(0, 0, 1)).normalize()
+
+    # Compute the arc center
+    center = midpoint + direction * perpendicular_distance * (1 if radius > 0 else -1)
+
+    # Add the arc to the sketch
+    #sketch.addArc(center.x, center.y, p1.x, p1.y, p2.x, p2.y, False)
+
+        # Create a circle in 2D with the calculated center and radius
+    circle = Part.Circle(center, Vector(0, 0, 1), abs(radius))
+
+    # Rotate p1 around the center by ±90 degrees to get a distinct third point
+    vector_to_rotate = p1 - center
+    rotation_angle = -90 if radius > 0 else 90
+    rotation = App.Rotation(App.Vector(0, 0, 1), rotation_angle)
+    third_point = center + rotation.multVec(vector_to_rotate)
+
+
+    # Create an arc segment from the circle
+    arc = Part.Arc(p1, third_point, p2)
+
+    # Add the arc to the sketch
+    sketch.addGeometry(arc, False)
+
+    
