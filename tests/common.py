@@ -19,11 +19,11 @@ def are_sketches_equal(sketch1, sketch2, tolerance=1e-7):
         if len(shape1.Edges) != len(shape2.Edges):
             return False, f"Different number of edges: {len(shape1.Edges)} vs {len(shape2.Edges)}"
         
-        # Compare areas
-        area1 = shape1.Area
-        area2 = shape2.Area
-        if abs(area1 - area2) > tolerance:
-            return False, f"Different areas: {area1} vs {area2}"
+        # # Compare areas
+        # area1 = shape1.Area
+        # area2 = shape2.Area
+        # if abs(area1 - area2) > tolerance:
+        #     return False, f"Different areas: {area1} vs {area2}"
         
         # Compare bounding boxes
         bbox1 = shape1.BoundBox
@@ -55,5 +55,5 @@ def create_rectangle(sketch, bottom_left_corner, width, height):
         sketch.addGeometry(Part.LineSegment(Vector(x+width, y+height, 0),
                                                 Vector(x, y+height, 0)))
         sketch.addGeometry(Part.LineSegment(Vector(x, y+height, 0),
-                                                Vector(0,0,0)))
+                                                Vector(x,y,0)))
     

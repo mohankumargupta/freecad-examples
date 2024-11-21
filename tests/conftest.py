@@ -19,10 +19,10 @@ def sketch():
    App.closeDocument(doc_name)
 
 @pytest.fixture 
-def sketches():
+def document_and_sketches():
    doc_name = "Untitled"
    doc = App.newDocument(doc_name)
    sketch1 = doc.addObject('Sketcher::SketchObject', 'Sketch1')
    sketch2 = doc.addObject('Sketcher::SketchObject', 'Sketch2')
-   yield sketch1,sketch2
+   yield doc, sketch1,sketch2
    App.closeDocument(doc_name)
