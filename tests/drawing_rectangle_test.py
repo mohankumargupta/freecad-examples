@@ -7,13 +7,6 @@ from drawing import makeRectangle, makeCenterRectangle, makeCircle
 
 #Vector=App.Vector
 
-# @pytest.fixture 
-# def freecad_document(request):
-#    doc_name = "boo"
-#    doc = App.newDocument(doc_name)
-#    yield doc
-#    App.closeDocument(doc_name)
-
 def vector_to_tuple(vector):
     return (vector.x, vector.y, vector.z)
 
