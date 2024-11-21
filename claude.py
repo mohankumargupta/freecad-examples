@@ -165,3 +165,28 @@ class TestGeometryComparison(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+#-------------------
+
+from dataclasses import dataclass
+
+@dataclass
+class Position:
+    x: float
+    y: float
+
+@dataclass
+class Context:
+    sketch: Sketcher.SketchObject
+    pen_state: str
+    position: Position
+    polyline: List[Part.LineSegment]
+    polyline_points: List[Tuple[float, float]]
+    geometries: List[Part.LineSegment]
+    constraints: List
+
+def pendown(sketch: Sketcher.SketchObject, point: Tuple[float, float]) -> None:
+    context = Context(sketch=sketch, pen_state='up', position=Position(0, 0), polyline=[], polyline_points=[], geometries=[], constraints=[])
+    context.position.x = point[0]
+    context.position.y = point[1]
+    ...

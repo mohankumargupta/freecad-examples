@@ -76,7 +76,12 @@ def _polyline_functions():
         right_x, right_y = context['position']['x'] , context['position']['y']
         left_x, left_y = right_x - left, right_y
         arc = makeArcTwoPoints(context['sketch'], (right_x, right_y, 0), (left_x, left_y, 0), radius)
-        
+
+
+    def diagonalSouthWest(length):
+        x, y = context['position']['x'] , context['position']['y']
+        diagonal(context['sketch'], (x,y,0), 180+45, length)
+
 
     return {
         'penup': penup,
@@ -85,7 +90,8 @@ def _polyline_functions():
         'down': down,
         'left': left,
         'right': right,
-        'arcLeft': arcLeft
+        'arcLeft': arcLeft,
+        'diagonalSouthWest': diagonalSouthWest
     }
 
 _turtle = _polyline_functions()
@@ -96,6 +102,7 @@ down = _turtle['down']
 left = _turtle['left']
 right = _turtle['right']
 arcLeft = _turtle['arcLeft']
+diagonalSouthWest = _turtle['diagonalSouthWest']
 
 def makeRectangle(sketch, corner, lengths):
     hmin, hmax = corner[0], corner[0] + lengths[0]
@@ -557,6 +564,49 @@ def makeArcTwoPoints(sketch, start_point, end_point, radius):
     # Add the arc to the sketch
     sketch.addGeometry(arc, False)
     
+
+
+#def diagonal(sketch, heading: float, start_point, horizontal_length: float, vertical_length: float):
+def diagonal(sketch, start_point,  heading: float, length):
+    """
+    Draws a diagonal line in the FreeCAD document with a given heading, horizontal and vertical lengths.
+    
+    Parameters:
+        sketch: The sketch object where the geometry will be added.
+        start_point (App.Vector): The starting point of the line (x, y, z).
+        horizontal_length (float): The horizontal distance to move from the start point.
+        vertical_length (float): The vertical distance to move from the start point.
+        heading (float): The heading angle (in degrees) where 0° is along the positive Y-axis,
+                         90° is along the positive X-axis, 180° is along the negative Y-axis,
+                         and 270° is along the negative X-axis.
+    """
+
+    x,y,_z = start_point
+
+    # Convert heading to radians
+    radians = math.radians(heading)
+
+      # Calculate the horizontal and vertical distances based on the diagonal length and heading
+    delta_x = length * math.cos(radians)
+    delta_y = length * math.sin(radians)
+    
+    # Calculate the endpoint of the line by adding the changes to the starting point
+    end_point = App.Vector(x + delta_x, y + delta_y, 0)
+      
+#  # Calculate the direction of movement using the heading
+#     delta_x = horizontal_length * math.cos(radians)
+#     delta_y = vertical_length * math.sin(radians)
+    
+#     # Calculate the endpoint by applying the changes to the starting point
+#     end_point = App.Vector(start_point.x + delta_x, start_point.y + delta_y, start_point.z)
+    
+    
+    # Create the line segment from start_point to end_point
+    line = Part.LineSegment(App.Vector(start_point), App.Vector(end_point))
+    
+    # Add the line to the sketch
+    sketch.addGeometry(line)    # Add the line to the document
+
 
 
 
