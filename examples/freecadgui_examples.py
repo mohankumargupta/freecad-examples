@@ -8,8 +8,9 @@ import FreeCADGui as Gui
 #from example004 import create
 #from example005 import create
 #from example006 import create
-from example007 import create
+#from example007 import create
 #from stencil import create
+from stencil_paddle import create
 
 
 

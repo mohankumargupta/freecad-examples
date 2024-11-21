@@ -34,22 +34,27 @@ def _polyline_functions():
         pass
 
 
-    def pendown(sketch, x,y):
+    def pendown(sketch, point):
+        x,y = point
         context['sketch'] = sketch
         context['position']['x'] = x
         context['position']['y'] = y
 
 
     def penup():
-        context['sketch'].Geometry = context['polyline']
+        pass
+        #context['sketch'].Geometry = context['polyline']
         
 
     def move(distance_x, distance_y):
         x = context['position']['x']
         y = context['position']['y']
-        context['polyline'].append(
+        context['sketch'].addGeometry(
             LineSegment(Vector(x,y), Vector(x + distance_x,y+distance_y))
         )
+        #context['polyline'].append(
+        #    LineSegment(Vector(x,y), Vector(x + distance_x,y+distance_y))
+        #)
         context['position']['x'] = x + distance_x
         context['position']['y'] = y + distance_y
 
@@ -67,13 +72,20 @@ def _polyline_functions():
     def right(distance):
         move(distance, 0)  
 
+    def arcLeft(left, radius):
+        right_x, right_y = context['position']['x'] , context['position']['y']
+        left_x, left_y = right_x - left, right_y
+        arc = makeArcTwoPoints(context['sketch'], (right_x, right_y, 0), (left_x, left_y, 0), radius)
+        
+
     return {
         'penup': penup,
         'pendown': pendown,
         'up': up,
         'down': down,
         'left': left,
-        'right': right
+        'right': right,
+        'arcLeft': arcLeft
     }
 
 _turtle = _polyline_functions()
@@ -83,6 +95,7 @@ up = _turtle['up']
 down = _turtle['down']
 left = _turtle['left']
 right = _turtle['right']
+arcLeft = _turtle['arcLeft']
 
 def makeRectangle(sketch, corner, lengths):
     hmin, hmax = corner[0], corner[0] + lengths[0]
@@ -543,5 +556,8 @@ def makeArcTwoPoints(sketch, start_point, end_point, radius):
 
     # Add the arc to the sketch
     sketch.addGeometry(arc, False)
+    
+
+
 
     
