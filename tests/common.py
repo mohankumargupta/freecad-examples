@@ -1,8 +1,10 @@
 from FreeCAD import Vector
 import FreeCAD as App
 import Part # type: ignore
+import Sketcher # type: ignore
+from collections import Counter
 
-def are_sketches_equal(sketch1, sketch2, tolerance=1e-7):
+def are_sketches_geometrically_equal(sketch1, sketch2, tolerance=1e-7):
     """
     Compare two sketches to check if they produce the same geometry
     Returns: bool, string (True/False, explanation message)
@@ -46,6 +48,9 @@ def are_sketches_equal(sketch1, sketch2, tolerance=1e-7):
     except Exception as e:
         return False, f"Comparison failed: {str(e)}"
 
+def are_sketches_equal(sketch1, sketch2):
+    return are_sketches_geometrically_equal(sketch1, sketch2) and compare_constraints(sketch1, sketch2)
+
 def create_rectangle(sketch, bottom_left_corner, width, height):
         x,y = bottom_left_corner
         sketch.addGeometry(Part.LineSegment(Vector(x,y,0),
@@ -57,3 +62,104 @@ def create_rectangle(sketch, bottom_left_corner, width, height):
         sketch.addGeometry(Part.LineSegment(Vector(x, y+height, 0),
                                                 Vector(x,y,0)))
     
+def create_rectangle_80x40_fully_constrained(sketch):
+    geoList = []
+    geoList.append(Part.LineSegment(App.Vector(0.000000, 0.000000, 0.000000),App.Vector(80.000000, 0.000000, 0.000000)))
+    geoList.append(Part.LineSegment(App.Vector(80.000000, 0.000000, 0.000000),App.Vector(80.000000, 40.000000, 0.000000)))
+    geoList.append(Part.LineSegment(App.Vector(80.000000, 40.000000, 0.000000),App.Vector(0.000000, 40.000000, 0.000000)))
+    geoList.append(Part.LineSegment(App.Vector(0.000000, 40.000000, 0.000000),App.Vector(0.000000, 0.000000, 0.000000)))
+    sketch.addGeometry(geoList,False)
+    del geoList
+    
+    constraintList = []
+    constraintList.append(Sketcher.Constraint('Coincident', 0, 2, 1, 1))
+    constraintList.append(Sketcher.Constraint('Coincident', 1, 2, 2, 1))
+    constraintList.append(Sketcher.Constraint('Coincident', 2, 2, 3, 1))
+    constraintList.append(Sketcher.Constraint('Coincident', 3, 2, 0, 1))
+    constraintList.append(Sketcher.Constraint('Horizontal', 0))
+    constraintList.append(Sketcher.Constraint('Horizontal', 2))
+    constraintList.append(Sketcher.Constraint('Vertical', 1))
+    constraintList.append(Sketcher.Constraint('Vertical', 3))
+    sketch.addConstraint(constraintList)
+    del constraintList
+    
+    sketch.addConstraint(Sketcher.Constraint('Distance',1,1,3,2,80.000000)) 
+    sketch.addConstraint(Sketcher.Constraint('Distance',0,1,2,2,40.000000)) 
+    sketch.addConstraint(Sketcher.Constraint('Coincident', 0, 1, -1, 1))
+
+def get_constraint_signature(constraint):
+    """
+    Creates a comparable signature for a constraint, ignoring internal indexes
+    
+    Args:
+        constraint: A FreeCAD sketch constraint
+        
+    Returns:
+        tuple: (constraint_type, relevant_values) that can be used for comparison
+    """
+    # Get base type
+    c_type = constraint.Type
+    
+    # Handle different constraint types
+    if c_type == 'Distance':
+        return (c_type, round(constraint.Value, 7))
+    elif c_type == 'DistanceX' or c_type == 'DistanceY':
+        return (c_type, round(constraint.Value, 7))
+    elif c_type == 'Angle':
+        return (c_type, round(constraint.Value, 7))
+    elif c_type in ['Horizontal', 'Vertical']:
+        return (c_type,)
+    elif c_type == 'Parallel':
+        return (c_type,)
+    elif c_type == 'Perpendicular':
+        return (c_type,)
+    elif c_type == 'Equal':
+        return (c_type,)
+    elif c_type == 'Coincident':
+        return (c_type,)
+    elif c_type == 'Radius':
+        return (c_type, round(constraint.Value, 7))
+    else:
+        return (c_type, getattr(constraint, 'Value', None))
+
+def compare_constraints(sketch1, sketch2):
+    """
+    Compare constraints between two sketches
+    
+    Args:
+        sketch1: First FreeCAD sketch
+        sketch2: Second FreeCAD sketch
+        
+    Returns:
+        tuple: (bool, str) - (True if constraints are equivalent, explanation message)
+    """
+    try:
+        constraints1 = sketch1.Constraints
+        constraints2 = sketch2.Constraints
+        
+        # Get signatures for all constraints
+        sigs1 = [get_constraint_signature(c) for c in constraints1]
+        sigs2 = [get_constraint_signature(c) for c in constraints2]
+        
+        # Count occurrences of each constraint signature
+        count1 = Counter(sigs1)
+        count2 = Counter(sigs2)
+        
+        if count1 != count2:
+            # Find differences
+            missing_in_2 = count1 - count2
+            extra_in_2 = count2 - count1
+            
+            msg = []
+            if missing_in_2:
+                msg.append(f"Constraints in sketch1 but not in sketch2: {dict(missing_in_2)}")
+            if extra_in_2:
+                msg.append(f"Constraints in sketch2 but not in sketch1: {dict(extra_in_2)}")
+                
+            return False, "\n".join(msg)
+            
+        return True, "Constraints are equivalent"
+        
+    except Exception as e:
+        return False, f"Comparison failed: {str(e)}"
+
