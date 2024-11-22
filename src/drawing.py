@@ -42,35 +42,42 @@ def _polyline_functions():
 
 
     def penup():
-        pass
-        #context['sketch'].Geometry = context['polyline']
-        
+        count = len(context['sketch'].Geometry)
+        constraintList = []
+        for i in range(0, count - 1):
+            constraintList.append(Sketcher.Constraint("Coincident", i, 2, i+1, 1))
+        context['sketch'].addConstraint(constraintList)
 
-    def move(distance_x, distance_y):
+    def move(distance_x, distance_y, constraint_type):
         x = context['position']['x']
         y = context['position']['y']
-        context['sketch'].addGeometry(
+        geoId = context['sketch'].addGeometry(
             LineSegment(Vector(x,y), Vector(x + distance_x,y+distance_y))
         )
+
+        if constraint_type:
+            context['sketch'].addConstraint(
+                Sketcher.Constraint(constraint_type, geoId)
+            )            
+        
         #context['polyline'].append(
         #    LineSegment(Vector(x,y), Vector(x + distance_x,y+distance_y))
         #)
         context['position']['x'] = x + distance_x
-        context['position']['y'] = y + distance_y
-
+        context['position']['y'] = y + distance_y        
 
     def up(distance):
-        move(0,distance)
+        move(0,distance, "Vertical")
 
 
     def down(distance):
-        move(0,-distance)
+        move(0,-distance, "Vertical")
 
     def left(distance):
-        move(-distance, 0)
+        move(-distance, 0, "Horizontal")
 
     def right(distance):
-        move(distance, 0)  
+        move(distance, 0, "Horizontal")  
 
     def arcLeft(left, radius):
         right_x, right_y = context['position']['x'] , context['position']['y']
