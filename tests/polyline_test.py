@@ -34,7 +34,7 @@ def test_rectangle(document_and_sketches):
 def test_rectangle_fully_constrained(document_and_sketches):
     doc, sketch_expected, sketch_actual = document_and_sketches
 
-    bottom_left_corner = (5,5)
+    bottom_left_corner = (0,0)
     width = 40
     height = 20
     

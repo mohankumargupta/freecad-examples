@@ -44,7 +44,7 @@ def _polyline_functions():
     def penup():
         count = len(context['sketch'].Geometry)
         constraintList = []
-        for i in range(0, count - 1):
+        for i in range(0, count):
             constraintList.append(Sketcher.Constraint("Coincident", i, 2, i+1, 1))
         context['sketch'].addConstraint(constraintList)
 
