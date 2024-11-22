@@ -12,6 +12,7 @@ import math
 def _polyline_functions():
     context = {
         'sketch': None,
+        'initial_position': None,
         'pen_state': 'up',
         'position': {'x': 0, 'y': 0},
         'polyline': [],
@@ -39,7 +40,7 @@ def _polyline_functions():
         context['sketch'] = sketch
         context['position']['x'] = x
         context['position']['y'] = y
-
+        context["initial_position"] = point
 
     def penup():
         count = len(context['sketch'].Geometry)
@@ -47,7 +48,10 @@ def _polyline_functions():
         for i in range(0, count - 1):
             constraintList.append(Sketcher.Constraint("Coincident", i, 2, i+1, 1))
         constraintList.append(Sketcher.Constraint("Coincident", count - 1, 2, 0, 1))
+        constraintList.append(Sketcher.Constraint("Coincident", 0, 1, -1, 1))
+        
         context['sketch'].addConstraint(constraintList)
+        
 
     def move(distance_x, distance_y, constraint_type):
         x = context['position']['x']
