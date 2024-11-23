@@ -83,8 +83,8 @@ def create_rectangle_80x40_fully_constrained(sketch):
     sketch.addConstraint(constraintList)
     del constraintList
     
-    #sketch.addConstraint(Sketcher.Constraint('DistanceX',- 1,1,0,1,80.000000)) 
-    #sketch.addConstraint(Sketcher.Constraint('DistanceY',-1,1,0,1,40.000000)) 
+    sketch.addConstraint(Sketcher.Constraint('DistanceX',- 1,1,0,1,80.000000)) 
+    sketch.addConstraint(Sketcher.Constraint('DistanceY',-1,1,0,1,40.000000)) 
     sketch.addConstraint(Sketcher.Constraint('Coincident', 0, 1, -1, 1))
 
 def get_constraint_signature(constraint):

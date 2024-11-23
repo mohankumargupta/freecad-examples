@@ -163,7 +163,7 @@ class TurtleSketch:
                 Sketcher.Constraint("Coincident", i, 2, i + 1, 1)
             )
         constraints.append(
-                Sketcher.Constraint("Coincident", geometry_count, 2, 0, 1)
+                Sketcher.Constraint("Coincident", geometry_count - 1, 2, 0, 1)
          )
         
         # Close the shape
@@ -178,14 +178,16 @@ class TurtleSketch:
             if pos == (0, 0):
                 constraints.append(Sketcher.Constraint("Coincident", 0, 1, -1, 1))
             elif x != 0:
-                constraints.append(Sketcher.Constraint("DistanceX", -1, 1, x, 1))
-            if y != 0:
-                constraints.append(Sketcher.Constraint("DistanceY", -1, 1, y, 1))
+                constraints.append(Sketcher.Constraint("DistanceX", -1, 1, 0, 1, x))
+            elif y != 0:
+                constraints.append(Sketcher.Constraint("DistanceY", -1, 1, 0, 1, y))
+            else:
+                pass
 
         else:
-            x,y = self._initial_position
-            constraints.append(Sketcher.Constraint("DistanceX", -1, 1, x, 1))
-            constraints.append(Sketcher.Constraint("DistanceY", -1, 1, y, 1))
+            x_initial,y_initial = self._initial_position
+            constraints.append(Sketcher.Constraint("DistanceX", -1, 1, 0, 1, x_initial))
+            constraints.append(Sketcher.Constraint("DistanceY", -1, 1, 0, 1, y_initial))
             
         self._sketch.addConstraint(constraints)
 

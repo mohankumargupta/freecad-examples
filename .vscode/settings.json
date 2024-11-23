@@ -1,7 +1,9 @@
 {
     "python.defaultInterpreterPath": "C:\\Users\\Mohan\\Downloads\\FreeCAD_weekly-builds-39153-conda-Windows-x86_64-py311\\bin\\python.exe",
     "python.testing.pytestArgs": [
-        "tests"
+        "tests",
+        "-v",
+        "--no-cov"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
