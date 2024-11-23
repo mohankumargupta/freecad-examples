@@ -61,7 +61,40 @@ def create_rectangle(sketch, bottom_left_corner, width, height):
                                                 Vector(x, y+height, 0)))
         sketch.addGeometry(Part.LineSegment(Vector(x, y+height, 0),
                                                 Vector(x,y,0)))
-    
+
+'''
+# Add construction points for the bottom left corner
+sketch.addGeometry(Part.Point(App.Vector(5, 5, 0)), True)  # True makes it a construction point
+
+# Create the rectangle lines
+sketch.addGeometry(Part.LineSegment(App.Vector(5, 5, 0), App.Vector(85, 5, 0)))   # Bottom line
+sketch.addGeometry(Part.LineSegment(App.Vector(85, 5, 0), App.Vector(85, 45, 0)))  # Right line
+sketch.addGeometry(Part.LineSegment(App.Vector(85, 45, 0), App.Vector(5, 45, 0)))  # Top line
+sketch.addGeometry(Part.LineSegment(App.Vector(5, 45, 0), App.Vector(5, 5, 0)))    # Left line
+
+# Add coincident constraints for corners
+sketch.addConstraint(Sketcher.Constraint('Coincident', 0, 1, 1, 1))  # Bottom-right corner
+sketch.addConstraint(Sketcher.Constraint('Coincident', 1, 2, 2, 1))  # Top-right corner
+sketch.addConstraint(Sketcher.Constraint('Coincident', 2, 2, 3, 1))  # Top-left corner
+sketch.addConstraint(Sketcher.Constraint('Coincident', 3, 2, 0, 1))  # Back to start
+
+# Add horizontal/vertical constraints
+sketch.addConstraint(Sketcher.Constraint('Horizontal', 0))  # Bottom line
+sketch.addConstraint(Sketcher.Constraint('Vertical', 1))    # Right line
+sketch.addConstraint(Sketcher.Constraint('Horizontal', 2))  # Top line
+sketch.addConstraint(Sketcher.Constraint('Vertical', 3))    # Left line
+
+# Add dimensional constraints
+sketch.addConstraint(Sketcher.Constraint('DistanceX', 0, 1, 0, 2, 80.0))  # Width
+sketch.addConstraint(Sketcher.Constraint('DistanceY', 3, 1, 3, 2, 40.0))  # Height
+
+# Fix the position of bottom left corner
+sketch.addConstraint(Sketcher.Constraint('DistanceX', -1, 1, 0, 1, 5.0))  # X position
+sketch.addConstraint(Sketcher.Constraint('DistanceY', -1, 1, 0, 1, 5.0))  # Y position
+
+'''
+
+
 def create_rectangle_80x40_fully_constrained(sketch):
     geoList = []
     geoList.append(Part.LineSegment(App.Vector(0.000000, 0.000000, 0.000000),App.Vector(80.000000, 0.000000, 0.000000)))
@@ -83,9 +116,9 @@ def create_rectangle_80x40_fully_constrained(sketch):
     sketch.addConstraint(constraintList)
     del constraintList
     
-    sketch.addConstraint(Sketcher.Constraint('DistanceX',- 1,1,0,1,80.000000)) 
-    sketch.addConstraint(Sketcher.Constraint('DistanceY',-1,1,0,1,40.000000)) 
-    sketch.addConstraint(Sketcher.Constraint('Coincident', 0, 1, -1, 1))
+    #sketch.addConstraint(Sketcher.Constraint('Distance',- 1,1,0,1,80.000000)) 
+    #sketch.addConstraint(Sketcher.Constraint('Distance',-1,1,0,1,40.000000)) 
+    #sketch.addConstraint(Sketcher.Constraint('Coincident', 0, 1, -1, 1))
 
 def get_constraint_signature(constraint):
     """
