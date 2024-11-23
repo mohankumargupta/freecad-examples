@@ -21,20 +21,6 @@ def _polyline_functions():
         'constraints': []
     }
 
-    def createLinesFromPoints():
-        polyline_count = len(context['polyline_points'])
-        lines = [
-            Part.LineSegment(context['polyline_points'][i], context['polyline_points'][(i+1)%polyline_count])
-            for i in range(polyline_count)
-        ]
-        context['geometries'] += lines
-        context['polyline_points'] = []
-
-
-    def createGeometriesFromLines():
-        pass
-
-
     def pendown(sketch, point):
         x,y = point
         context['sketch'] = sketch
@@ -42,14 +28,30 @@ def _polyline_functions():
         context['position']['y'] = y
         context["initial_position"] = point
 
-    def penup():
+    def penup(pos=None):
         count = len(context['sketch'].Geometry)
         constraintList = []
         for i in range(0, count - 1):
             constraintList.append(Sketcher.Constraint("Coincident", i, 2, i+1, 1))
         constraintList.append(Sketcher.Constraint("Coincident", count - 1, 2, 0, 1))
-        constraintList.append(Sketcher.Constraint("Coincident", 0, 1, -1, 1))
-        
+                
+        if pos:
+            x,y =pos
+            if pos == (0,0):
+                constraintList.append(Sketcher.Constraint("Coincident", 0, 1, -1, 1))
+
+            elif x == 0:
+                pass
+            elif y ==0:
+                pass
+            else:
+                constraintList.append(Sketcher.Constraint("DistanceX", 0, 1, x))
+                constraintList.append(Sketcher.Constraint("DistanceY", 0, 1, y)) 
+
+
+        else:
+            pass
+
         context['sketch'].addConstraint(constraintList)
         
 
