@@ -1,122 +1,255 @@
-import FreeCAD as App
-from FreeCAD import Vector # type: ignore
-import Part # type: ignore
-from Part import LineSegment # type: ignore
-import Sketcher # type: ignore
+# import FreeCAD as App
+# from FreeCAD import Vector # type: ignore
+# import Part # type: ignore
+# from Part import LineSegment # type: ignore
+# import Sketcher # type: ignore
 
-import math
+# import math
 
-#LineSegment = Part.LineSegment
+# #LineSegment = Part.LineSegment
 
 
-def _polyline_functions():
-    context = {
-        'sketch': None,
-        'initial_position': None,
-        'pen_state': 'up',
-        'position': {'x': 0, 'y': 0},
-        'polyline': [],
-        'polyline_points': [],
-        'geometries': [],
-        'constraints': []
-    }
+# def _polyline_functions():
+#     context = {
+#         'sketch': None,
+#         'initial_position': None,
+#         'pen_state': 'up',
+#         'position': {'x': 0, 'y': 0},
+#         'polyline': [],
+#         'polyline_points': [],
+#         'geometries': [],
+#         'constraints': []
+#     }
 
-    def pendown(sketch, point):
-        x,y = point
-        context['sketch'] = sketch
-        context['position']['x'] = x
-        context['position']['y'] = y
-        context["initial_position"] = point
+#     def pendown(sketch, point):
+#         x,y = point
+#         context['sketch'] = sketch
+#         context['position']['x'] = x
+#         context['position']['y'] = y
+#         context["initial_position"] = point
 
-    def penup(pos=None):
-        count = len(context['sketch'].Geometry)
-        constraintList = []
-        for i in range(0, count - 1):
-            constraintList.append(Sketcher.Constraint("Coincident", i, 2, i+1, 1))
-        constraintList.append(Sketcher.Constraint("Coincident", count - 1, 2, 0, 1))
+#     def penup(pos=None):
+#         count = len(context['sketch'].Geometry)
+#         constraintList = []
+#         for i in range(0, count - 1):
+#             constraintList.append(Sketcher.Constraint("Coincident", i, 2, i+1, 1))
+#         constraintList.append(Sketcher.Constraint("Coincident", count - 1, 2, 0, 1))
                 
+#         if pos:
+#             x,y =pos
+#             if pos == (0,0):
+#                 constraintList.append(Sketcher.Constraint("Coincident", 0, 1, -1, 1))
+
+#             elif x == 0:
+#                 pass
+#             elif y ==0:
+#                 pass
+#             else:
+#                 constraintList.append(Sketcher.Constraint("DistanceX", 0, 1, x))
+#                 constraintList.append(Sketcher.Constraint("DistanceY", 0, 1, y)) 
+
+
+#         else:
+#             pass
+
+#         context['sketch'].addConstraint(constraintList)
+        
+
+#     def move(distance_x, distance_y, constraint_type):
+#         x = context['position']['x']
+#         y = context['position']['y']
+#         geoId = context['sketch'].addGeometry(
+#             LineSegment(Vector(x,y), Vector(x + distance_x,y+distance_y))
+#         )
+
+#         if constraint_type:
+#             context['sketch'].addConstraint(
+#                 Sketcher.Constraint(constraint_type, geoId)
+#             )            
+        
+#         #context['polyline'].append(
+#         #    LineSegment(Vector(x,y), Vector(x + distance_x,y+distance_y))
+#         #)
+#         context['position']['x'] = x + distance_x
+#         context['position']['y'] = y + distance_y        
+
+#     def up(distance):
+#         move(0,distance, "Vertical")
+
+
+#     def down(distance):
+#         move(0,-distance, "Vertical")
+
+#     def left(distance):
+#         move(-distance, 0, "Horizontal")
+
+#     def right(distance):
+#         move(distance, 0, "Horizontal")  
+
+#     def arcLeft(left, radius):
+#         right_x, right_y = context['position']['x'] , context['position']['y']
+#         left_x, left_y = right_x - left, right_y
+#         arc = makeArcTwoPoints(context['sketch'], (right_x, right_y, 0), (left_x, left_y, 0), radius)
+
+
+#     def diagonalSouthWest(length):
+#         x, y = context['position']['x'] , context['position']['y']
+#         diagonal(context['sketch'], (x,y,0), 180+45, length)
+
+
+#     return {
+#         'penup': penup,
+#         'pendown': pendown,
+#         'up': up,
+#         'down': down,
+#         'left': left,
+#         'right': right,
+#         'arcLeft': arcLeft,
+#         'diagonalSouthWest': diagonalSouthWest
+#     }
+
+# _turtle = _polyline_functions()
+# penup = _turtle['penup']
+# pendown = _turtle['pendown']
+# up = _turtle['up']
+# down = _turtle['down']
+# left = _turtle['left']
+# right = _turtle['right']
+# arcLeft = _turtle['arcLeft']
+# diagonalSouthWest = _turtle['diagonalSouthWest']
+
+from typing import Tuple, Optional
+import math
+import FreeCAD as App
+from FreeCAD import Vector
+import Part
+from Part import LineSegment
+import Sketcher
+
+class TurtleSketch:
+    """A turtle graphics-style interface for FreeCAD sketching."""
+    
+    def __init__(self):
+        self._sketch = None
+        self._position = Vector(0, 0, 0)
+        self._initial_position = None
+
+    @property
+    def position(self) -> Vector:
+        return self._position
+
+    @position.setter
+    def position(self, pos: Vector):
+        self._position = pos
+
+    def pendown(self, sketch: 'Sketcher.Sketch', point: Tuple[float, float]) -> None:
+        """Start drawing from the specified point."""
+        x, y = point
+        self._sketch = sketch
+        self._position = Vector(x, y, 0)
+        self._initial_position = point
+
+    def penup(self, pos: Optional[Tuple[float, float]] = None) -> None:
+        """Stop drawing and add constraints to close the shape."""
+        if not self._sketch:
+            return
+
+        geometry_count = len(self._sketch.Geometry)
+        constraints = []
+
+        # Connect consecutive segments
+        for i in range(geometry_count - 1):
+            constraints.append(
+                Sketcher.Constraint("Coincident", i, 2, i + 1, 1)
+            )
+        
+        # Close the shape
+        if geometry_count > 0:
+            constraints.append(
+                Sketcher.Constraint("Coincident", geometry_count - 1, 2, 0, 1)
+            )
+
+        # Handle positioning constraints
         if pos:
-            x,y =pos
-            if pos == (0,0):
-                constraintList.append(Sketcher.Constraint("Coincident", 0, 1, -1, 1))
+            x, y = pos
+            if pos == (0, 0):
+                constraints.append(Sketcher.Constraint("Coincident", 0, 1, -1, 1))
+            elif x != 0:
+                constraints.append(Sketcher.Constraint("DistanceX", 0, 1, x))
+            if y != 0:
+                constraints.append(Sketcher.Constraint("DistanceY", 0, 1, y))
 
-            elif x == 0:
-                pass
-            elif y ==0:
-                pass
-            else:
-                constraintList.append(Sketcher.Constraint("DistanceX", 0, 1, x))
-                constraintList.append(Sketcher.Constraint("DistanceY", 0, 1, y)) 
+        self._sketch.addConstraint(constraints)
 
+    def move(self, dx: float, dy: float, constraint_type: Optional[str] = None) -> None:
+        """Move the turtle by the specified delta x and y."""
+        if not self._sketch:
+            return
 
-        else:
-            pass
-
-        context['sketch'].addConstraint(constraintList)
+        end_pos = Vector(self._position.x + dx, self._position.y + dy, 0)
         
-
-    def move(distance_x, distance_y, constraint_type):
-        x = context['position']['x']
-        y = context['position']['y']
-        geoId = context['sketch'].addGeometry(
-            LineSegment(Vector(x,y), Vector(x + distance_x,y+distance_y))
+        geo_id = self._sketch.addGeometry(
+            LineSegment(self._position, end_pos)
         )
-
-        if constraint_type:
-            context['sketch'].addConstraint(
-                Sketcher.Constraint(constraint_type, geoId)
-            )            
         
-        #context['polyline'].append(
-        #    LineSegment(Vector(x,y), Vector(x + distance_x,y+distance_y))
-        #)
-        context['position']['x'] = x + distance_x
-        context['position']['y'] = y + distance_y        
+        if constraint_type:
+            self._sketch.addConstraint(
+                Sketcher.Constraint(constraint_type, geo_id)
+            )
+            
+        self._position = end_pos
 
-    def up(distance):
-        move(0,distance, "Vertical")
+    def up(self, distance: float) -> None:
+        """Move turtle upward."""
+        self.move(0, distance, "Vertical")
 
+    def down(self, distance: float) -> None:
+        """Move turtle downward."""
+        self.move(0, -distance, "Vertical")
 
-    def down(distance):
-        move(0,-distance, "Vertical")
+    def left(self, distance: float) -> None:
+        """Move turtle left."""
+        self.move(-distance, 0, "Horizontal")
 
-    def left(distance):
-        move(-distance, 0, "Horizontal")
+    def right(self, distance: float) -> None:
+        """Move turtle right."""
+        self.move(distance, 0, "Horizontal")
 
-    def right(distance):
-        move(distance, 0, "Horizontal")  
+    def arc_left(self, left_distance: float, radius: float) -> None:
+        """Create an arc to the left with given radius."""
+        end_pos = Vector(self._position.x - left_distance, self._position.y, 0)
+        
+        if hasattr(self, 'make_arc_two_points'):
+            self.make_arc_two_points(
+                self._sketch,
+                (self._position.x, self._position.y, 0),
+                (end_pos.x, end_pos.y, 0),
+                radius
+            )
 
-    def arcLeft(left, radius):
-        right_x, right_y = context['position']['x'] , context['position']['y']
-        left_x, left_y = right_x - left, right_y
-        arc = makeArcTwoPoints(context['sketch'], (right_x, right_y, 0), (left_x, left_y, 0), radius)
+    def diagonal_southwest(self, length: float) -> None:
+        """Move diagonally southwest."""
+        if hasattr(self, 'diagonal'):
+            self.diagonal(
+                self._sketch,
+                (self._position.x, self._position.y, 0),
+                180 + 45,
+                length
+            )
 
+# Create singleton instance
+turtle = TurtleSketch()
 
-    def diagonalSouthWest(length):
-        x, y = context['position']['x'] , context['position']['y']
-        diagonal(context['sketch'], (x,y,0), 180+45, length)
+# Export common functions
+penup = turtle.penup
+pendown = turtle.pendown
+up = turtle.up
+down = turtle.down
+left = turtle.left
+right = turtle.right
+arc_left = turtle.arc_left
+diagonal_southwest = turtle.diagonal_southwest
 
-
-    return {
-        'penup': penup,
-        'pendown': pendown,
-        'up': up,
-        'down': down,
-        'left': left,
-        'right': right,
-        'arcLeft': arcLeft,
-        'diagonalSouthWest': diagonalSouthWest
-    }
-
-_turtle = _polyline_functions()
-penup = _turtle['penup']
-pendown = _turtle['pendown']
-up = _turtle['up']
-down = _turtle['down']
-left = _turtle['left']
-right = _turtle['right']
-arcLeft = _turtle['arcLeft']
-diagonalSouthWest = _turtle['diagonalSouthWest']
 
 def makeRectangle(sketch, corner, lengths):
     hmin, hmax = corner[0], corner[0] + lengths[0]
