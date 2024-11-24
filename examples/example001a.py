@@ -66,7 +66,7 @@ def create():
     #pad.Visibility = True
     body.Visibility = True
     sketch.Visibility = True
-
+    
     #doc.recompute()
 
     # Save the document (optional)

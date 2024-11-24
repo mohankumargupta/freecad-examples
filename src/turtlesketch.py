@@ -54,21 +54,24 @@ class TurtleSketch:
             )
 
         # Handle positioning constraints
+        x,y=None,None
         if pos:
             x, y = pos
-            if pos == (0, 0):
-                constraints.append(Sketcher.Constraint("Coincident", 0, 1, -1, 1))
-            elif x != 0:
-                constraints.append(Sketcher.Constraint("DistanceX", -1, 1, 0, 1, x))
-            elif y != 0:
-                constraints.append(Sketcher.Constraint("DistanceY", -1, 1, 0, 1, y))
-            else:
-                pass
-
         else:
-            x_initial,y_initial = self._initial_position
-            constraints.append(Sketcher.Constraint("DistanceX", -1, 1, 0, 1, x_initial))
-            constraints.append(Sketcher.Constraint("DistanceY", -1, 1, 0, 1, y_initial))
+            x,y = self._initial_position
+
+        if (x,y) == (0, 0):
+            constraints.append(Sketcher.Constraint("Coincident", 0, 1, -1, 1))
+        elif x != 0:
+            constraints.append(Sketcher.Constraint("DistanceX", -1, 1, 0, 1, x))
+        elif y != 0:
+            constraints.append(Sketcher.Constraint("DistanceY", -1, 1, 0, 1, y))
+        else:
+            constraints.append(Sketcher.Constraint("DistanceX", -1, 1, 0, 1, x))
+            constraints.append(Sketcher.Constraint("DistanceY", -1, 1, 0, 1, y))
+
+
+
             
         self._sketch.addConstraint(constraints)
 
