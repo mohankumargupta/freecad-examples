@@ -53,6 +53,9 @@ class TurtleSketch:
                 Sketcher.Constraint("Coincident", geometry_count - 1, 2, 0, 1)
             )
 
+
+        
+
         # Handle positioning constraints
         x,y=None,None
         if pos:
@@ -78,8 +81,19 @@ class TurtleSketch:
 
             constraints.append(Sketcher.Constraint('PointOnObject',0,1,-1))
         else:
-            constraints.append(Sketcher.Constraint("DistanceX", -1, 1, 0, 1, x))
-            constraints.append(Sketcher.Constraint("DistanceY", -1, 1, 0, 1, y))
+            if y > 0:
+                constraints.append(Sketcher.Constraint("DistanceY", -1, 1, 0, 1, y))
+            else:
+                constraints.append(Sketcher.Constraint("DistanceY", 0, 1, -1, 1, -y))
+
+
+            if x > 0:
+                constraints.append(Sketcher.Constraint("DistanceX", -1, 1, 0, 1, x))
+            else:
+                constraints.append(Sketcher.Constraint("DistanceX", 0, 1, -1, 1, -x))
+
+            #constraints.append(Sketcher.Constraint("DistanceX", -1, 1, 0, 1, x))
+            #constraints.append(Sketcher.Constraint("DistanceY", -1, 1, 0, 1, y))
 
 
 
