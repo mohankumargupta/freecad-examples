@@ -63,9 +63,20 @@ class TurtleSketch:
         if (x,y) == (0, 0):
             constraints.append(Sketcher.Constraint("Coincident", 0, 1, -1, 1))
         elif x != 0:
-            constraints.append(Sketcher.Constraint("DistanceX", -1, 1, 0, 1, x))
+            if x > 0:
+                constraints.append(Sketcher.Constraint("DistanceX", -1, 1, 0, 1, x))
+            else:
+                constraints.append(Sketcher.Constraint("DistanceX", 0, 1, -1, 1, -x))
+
+            constraints.append(Sketcher.Constraint('PointOnObject',0,1,-1))
+
         elif y != 0:
-            constraints.append(Sketcher.Constraint("DistanceY", -1, 1, 0, 1, y))
+            if y > 0:
+                constraints.append(Sketcher.Constraint("DistanceY", -1, 1, 0, 1, y))
+            else:
+                constraints.append(Sketcher.Constraint("DistanceY", 0, 1, -1, 1, -y))
+
+            constraints.append(Sketcher.Constraint('PointOnObject',0,1,-1))
         else:
             constraints.append(Sketcher.Constraint("DistanceX", -1, 1, 0, 1, x))
             constraints.append(Sketcher.Constraint("DistanceY", -1, 1, 0, 1, y))

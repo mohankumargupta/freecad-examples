@@ -1,310 +1,178 @@
-import unittest
-import FreeCAD
-import Part # type: ignore
+from typing import Tuple, Optional
 import math
+import FreeCAD as App
+from FreeCAD import Vector
+from Part import LineSegment # type: ignore
+import Sketcher # type: ignore
+from drawing import diagonal, makeArcTwoPoints
 
-class TestGeometryComparison(unittest.TestCase):
-    def setUp(self):
-        self.doc = FreeCAD.newDocument("TestDoc")
-        # Define tolerance for floating point comparisons
-        self.epsilon = 1e-7
+class TurtleSketch:
+    """A turtle graphics-style interface for FreeCAD sketching."""
+    
+    def __init__(self):
+        self._sketch = None
+        self._position = Vector(0, 0, 0)
+        self._initial_position = None
 
-    def tearDown(self):
-        FreeCAD.closeDocument(self.doc.Name)
+    @property
+    def position(self) -> Vector:
+        return self._position
 
-    def assert_points_equal(self, point1, point2, msg=None):
-        """Compare two points (FreeCAD.Vector) for equality within epsilon."""
-        self.assertAlmostEqual(point1.x, point2.x, delta=self.epsilon, 
-                             msg=f"{msg}: X coordinates differ")
-        self.assertAlmostEqual(point1.y, point2.y, delta=self.epsilon, 
-                             msg=f"{msg}: Y coordinates differ")
-        self.assertAlmostEqual(point1.z, point2.z, delta=self.epsilon, 
-                             msg=f"{msg}: Z coordinates differ")
+    @position.setter
+    def position(self, pos: Vector):
+        self._position = pos
 
-    def assert_lines_equal(self, line1, line2, msg=None):
-        """Compare two lines (Part.LineSegment) for equality."""
-        # Check if lines have same start and end points (in either direction)
-        direct_match = (
-            self.are_points_equal(line1.StartPoint, line2.StartPoint) and
-            self.are_points_equal(line1.EndPoint, line2.EndPoint)
-        )
-        reverse_match = (
-            self.are_points_equal(line1.StartPoint, line2.EndPoint) and
-            self.are_points_equal(line1.EndPoint, line2.StartPoint)
-        )
+    def pendown(self, sketch: 'Sketcher.Sketch', point: Tuple[float, float]) -> None:
+        """Start drawing from the specified point."""
+        x, y = point
+        self._sketch = sketch
+        self._position = Vector(x, y, 0)
+        self._initial_position = point
+
+    def penup(self, pos: Optional[Tuple[float, float]] = None) -> None:
+        """Stop drawing and add constraints to close the shape."""
+        if not self._sketch:
+            return
+
+        geometry_count = len(self._sketch.Geometry)
+        constraints = []
+
+        # Connect consecutive segments
+        for i in range(geometry_count - 1):
+            constraints.append(
+                Sketcher.Constraint("Coincident", i, 2, i + 1, 1)
+            )
         
-        self.assertTrue(direct_match or reverse_match, 
-                       msg or "Lines are not equal")
-
-    def are_points_equal(self, point1, point2):
-        """Check if two points are equal within epsilon."""
-        return (abs(point1.x - point2.x) < self.epsilon and
-                abs(point1.y - point2.y) < self.epsilon and
-                abs(point1.z - point2.z) < self.epsilon)
-
-    def test_comparing_identical_rectangles(self):
-        """Test comparing two identical rectangles."""
-        # Create first rectangle
-        rect1_points = [
-            FreeCAD.Vector(0, 0, 0),
-            FreeCAD.Vector(100, 0, 0),
-            FreeCAD.Vector(100, 50, 0),
-            FreeCAD.Vector(0, 50, 0)
-        ]
-        rect1_lines = [
-            Part.LineSegment(rect1_points[i], rect1_points[(i+1)%4])
-            for i in range(4)
-        ]
-
-        # Create second identical rectangle
-        rect2_points = [
-            FreeCAD.Vector(0, 0, 0),
-            FreeCAD.Vector(100, 0, 0),
-            FreeCAD.Vector(100, 50, 0),
-            FreeCAD.Vector(0, 50, 0)
-        ]
-        rect2_lines = [
-            Part.LineSegment(rect2_points[i], rect2_points[(i+1)%4])
-            for i in range(4)
-        ]
-
-        # Compare each line
-        for i in range(4):
-            self.assert_lines_equal(rect1_lines[i], rect2_lines[i],
-                                  f"Line {i} differs between rectangles")
-
-    def test_comparing_translated_rectangles(self):
-        """Test comparing two rectangles with same shape but different positions."""
-        # Create first rectangle at origin
-        rect1_points = [
-            FreeCAD.Vector(0, 0, 0),
-            FreeCAD.Vector(100, 0, 0),
-            FreeCAD.Vector(100, 50, 0),
-            FreeCAD.Vector(0, 50, 0)
-        ]
-        rect1_lines = [
-            Part.LineSegment(rect1_points[i], rect1_points[(i+1)%4])
-            for i in range(4)
-        ]
-
-        # Create second rectangle translated by (10, 10, 0)
-        translation = FreeCAD.Vector(10, 10, 0)
-        rect2_points = [p.add(translation) for p in rect1_points]
-        rect2_lines = [
-            Part.LineSegment(rect2_points[i], rect2_points[(i+1)%4])
-            for i in range(4)
-        ]
-
-        # Compare dimensions and shape
-        for i in range(4):
-            # Compare lengths
-            self.assertAlmostEqual(
-                rect1_lines[i].length(),
-                rect2_lines[i].length(),
-                delta=self.epsilon,
-                msg=f"Line {i} length differs between rectangles"
+        # Close the shape
+        if geometry_count > 0:
+            constraints.append(
+                Sketcher.Constraint("Coincident", geometry_count - 1, 2, 0, 1)
             )
 
-            # Compare angles between consecutive lines
-            v1_current = rect1_lines[i].EndPoint - rect1_lines[i].StartPoint
-            v1_next = rect1_lines[(i+1)%4].EndPoint - rect1_lines[(i+1)%4].StartPoint
-            v2_current = rect2_lines[i].EndPoint - rect2_lines[i].StartPoint
-            v2_next = rect2_lines[(i+1)%4].EndPoint - rect2_lines[(i+1)%4].StartPoint
+        # Handle positioning constraints
+        x, y = None, None
+        if pos:
+            x, y = pos
+        else:
+            x, y = self._initial_position
 
-            angle1 = math.degrees(math.acos(
-                (v1_current.x * v1_next.x + v1_current.y * v1_next.y) /
-                (v1_current.Length * v1_next.Length)
-            ))
-            angle2 = math.degrees(math.acos(
-                (v2_current.x * v2_next.x + v2_current.y * v2_next.y) /
-                (v2_current.Length * v2_next.Length)
-            ))
+        if (x, y) == (0, 0):
+            constraints.append(Sketcher.Constraint("Coincident", 0, 1, -1, 1))
+        elif x != 0:
+            if x > 0:
+                constraints.append(Sketcher.Constraint("DistanceX", -1, 1, 0, 1, x))
+            else:
+                constraints.append(Sketcher.Constraint("DistanceX", 0, 1, -1, 1, -x))
+            constraints.append(Sketcher.Constraint('PointOnObject', 0, 1, -1))
+        elif y != 0:
+            constraints.append(Sketcher.Constraint("DistanceY", -1, 1, 0, 1, y))
+            constraints.append(Sketcher.Constraint('PointOnObject', 0, 1, -1))
+        else:
+            constraints.append(Sketcher.Constraint("DistanceX", -1, 1, 0, 1, x))
+            constraints.append(Sketcher.Constraint("DistanceY", -1, 1, 0, 1, y))
             
-            self.assertAlmostEqual(
-                angle1, angle2,
-                delta=self.epsilon,
-                msg=f"Angle at corner {i} differs between rectangles"
+        self._sketch.addConstraint(constraints)
+
+    def move(self, dx: float, dy: float, constraint_type: Optional[str] = None) -> int:
+        """Move the turtle by the specified delta x and y. Returns geometry ID."""
+        if not self._sketch:
+            return -1
+
+        end_pos = Vector(self._position.x + dx, self._position.y + dy, 0)
+        
+        geo_id = self._sketch.addGeometry(
+            LineSegment(self._position, end_pos)
+        )
+        
+        # Add the primary constraint (Horizontal/Vertical)
+        if constraint_type:
+            self._sketch.addConstraint(
+                Sketcher.Constraint(constraint_type, geo_id)
+            )
+            
+        # Add distance constraints based on the movement type
+        if dx != 0:
+            if dx > 0:
+                self._sketch.addConstraint(
+                    Sketcher.Constraint("DistanceX", geo_id, 1, geo_id, 2, dx)
+                )
+            else:
+                self._sketch.addConstraint(
+                    Sketcher.Constraint("DistanceX", geo_id, 2, geo_id, 1, -dx)
+                )
+        if dy != 0:
+            if dy > 0:
+                self._sketch.addConstraint(
+                    Sketcher.Constraint("DistanceY", geo_id, 1, geo_id, 2, dy)
+                )
+            else:
+                self._sketch.addConstraint(
+                    Sketcher.Constraint("DistanceY", geo_id, 2, geo_id, 1, -dy)
+                )
+            
+        self._position = end_pos
+        return geo_id
+
+    def up(self, distance: float) -> int:
+        """Move turtle upward. Returns geometry ID."""
+        return self.move(0, distance, "Vertical")
+
+    def down(self, distance: float) -> int:
+        """Move turtle downward. Returns geometry ID."""
+        return self.move(0, -distance, "Vertical")
+
+    def left(self, distance: float) -> int:
+        """Move turtle left. Returns geometry ID."""
+        return self.move(-distance, 0, "Horizontal")
+
+    def right(self, distance: float) -> int:
+        """Move turtle right. Returns geometry ID."""
+        return self.move(distance, 0, "Horizontal")
+
+    def removeConstraint(self, constraint_type: str, geo_id: int) -> None:
+        """Remove a specific type of constraint from a geometry element."""
+        if not self._sketch:
+            return
+
+        # Find the constraint index that matches both the type and geometry ID
+        for i, constraint in enumerate(self._sketch.Constraints):
+            if (constraint.Type == constraint_type and 
+                (constraint.First == geo_id or constraint.Second == geo_id)):
+                self._sketch.delConstraint(i)
+                break
+
+    def arc_left(self, left_distance: float, radius: float) -> None:
+        """Create an arc to the left with given radius."""
+        end_pos = Vector(self._position.x - left_distance, self._position.y, 0)
+        
+        if hasattr(self, 'make_arc_two_points'):
+            makeArcTwoPoints(
+                self._sketch,
+                (self._position.x, self._position.y, 0),
+                (end_pos.x, end_pos.y, 0),
+                radius
             )
 
-    def test_comparing_shape_objects(self):
-        """Test comparing rectangles as complete shapes."""
-        # Create first rectangle as a shape
-        points1 = [
-            FreeCAD.Vector(0, 0, 0),
-            FreeCAD.Vector(100, 0, 0),
-            FreeCAD.Vector(100, 50, 0),
-            FreeCAD.Vector(0, 50, 0)
-        ]
-        wire1 = Part.makePolygon(points1 + [points1[0]])
-        face1 = Part.Face(wire1)
+    def diagonal_southwest(self, length: float) -> None:
+        """Move diagonally southwest."""
+        if hasattr(self, 'diagonal'):
+            diagonal(
+                self._sketch,
+                (self._position.x, self._position.y, 0),
+                180 + 45,
+                length
+            )
 
-        # Create second rectangle as a shape
-        points2 = [
-            FreeCAD.Vector(0, 0, 0),
-            FreeCAD.Vector(100, 0, 0),
-            FreeCAD.Vector(100, 50, 0),
-            FreeCAD.Vector(0, 50, 0)
-        ]
-        wire2 = Part.makePolygon(points2 + [points2[0]])
-        face2 = Part.Face(wire2)
+# Create singleton instance
+turtle = TurtleSketch()
 
-        # Compare areas
-        self.assertAlmostEqual(face1.Area, face2.Area, delta=self.epsilon,
-                             msg="Rectangle areas differ")
-
-        # Compare perimeters
-        self.assertAlmostEqual(wire1.Length, wire2.Length, delta=self.epsilon,
-                             msg="Rectangle perimeters differ")
-
-        # Compare bounding boxes
-        bbox1 = face1.BoundBox
-        bbox2 = face2.BoundBox
-        self.assertAlmostEqual(bbox1.DiagonalLength, bbox2.DiagonalLength,
-                             delta=self.epsilon,
-                             msg="Rectangle diagonal lengths differ")
-
-if __name__ == '__main__':
-    unittest.main()
-
-#-------------------
-
-from dataclasses import dataclass
-
-@dataclass
-class Position:
-    x: float
-    y: float
-
-@dataclass
-class Context:
-    sketch: Sketcher.SketchObject
-    pen_state: str
-    position: Position
-    polyline: List[Part.LineSegment]
-    polyline_points: List[Tuple[float, float]]
-    geometries: List[Part.LineSegment]
-    constraints: List
-
-def pendown(sketch: Sketcher.SketchObject, point: Tuple[float, float]) -> None:
-    context = Context(sketch=sketch, pen_state='up', position=Position(0, 0), polyline=[], polyline_points=[], geometries=[], constraints=[])
-    context.position.x = point[0]
-    context.position.y = point[1]
-    ...
-
-
-import unittest
-import FreeCAD
-import Part
-import Sketcher
-import math
-
-class TestSketchComparison(unittest.TestCase):
-    def setUp(self):
-        self.doc = FreeCAD.newDocument("TestDoc")
-        
-        # Create first sketch
-        self.body1 = self.doc.addObject('PartDesign::Body', 'Body1')
-        self.sketch1 = self.doc.addObject('Sketcher::SketchObject', 'Sketch1')
-        self.body1.addObject(self.sketch1)
-        
-        # Create second sketch
-        self.body2 = self.doc.addObject('PartDesign::Body', 'Body2')
-        self.sketch2 = self.doc.addObject('Sketcher::SketchObject', 'Sketch2')
-        self.body2.addObject(self.sketch2)
-        
-    def create_rectangle1(self):
-        """Creates rectangle using four lines and constraints"""
-        # Create a 10x20 rectangle with lines and constraints
-        self.sketch1.addGeometry(Part.LineSegment(FreeCAD.Vector(0,0,0),
-                                                FreeCAD.Vector(10,0,0)))
-        self.sketch1.addGeometry(Part.LineSegment(FreeCAD.Vector(10,0,0),
-                                                FreeCAD.Vector(10,20,0)))
-        self.sketch1.addGeometry(Part.LineSegment(FreeCAD.Vector(10,20,0),
-                                                FreeCAD.Vector(0,20,0)))
-        self.sketch1.addGeometry(Part.LineSegment(FreeCAD.Vector(0,20,0),
-                                                FreeCAD.Vector(0,0,0)))
-        
-        # Add constraints (perpendicular corners)
-        self.sketch1.addConstraint(Sketcher.Constraint('Perpendicular',0,1))
-        self.sketch1.addConstraint(Sketcher.Constraint('Perpendicular',1,2))
-        self.sketch1.addConstraint(Sketcher.Constraint('Perpendicular',2,3))
-        self.sketch1.addConstraint(Sketcher.Constraint('Perpendicular',3,0))
-        
-    def create_rectangle2(self):
-        """Creates same rectangle using different approach (rectangle tool simulation)"""
-        # Create same 10x20 rectangle but with different construction method
-        self.sketch2.addGeometry(Part.Rectangle(FreeCAD.Vector(0,0,0),
-                                              FreeCAD.Vector(10,20,0)))
-    
-    def are_sketches_equal(self, sketch1, sketch2, tolerance=1e-7):
-        """
-        Compare two sketches to check if they produce the same geometry
-        Returns: bool, string (True/False, explanation message)
-        """
-        try:
-            # Get shapes from sketches
-            shape1 = sketch1.Shape
-            shape2 = sketch2.Shape
-            
-            if shape1.isNull() or shape2.isNull():
-                return False, "One or both shapes are null"
-            
-            # Compare basic properties
-            if len(shape1.Edges) != len(shape2.Edges):
-                return False, f"Different number of edges: {len(shape1.Edges)} vs {len(shape2.Edges)}"
-            
-            # Compare areas
-            area1 = shape1.Area
-            area2 = shape2.Area
-            if abs(area1 - area2) > tolerance:
-                return False, f"Different areas: {area1} vs {area2}"
-            
-            # Compare bounding boxes
-            bbox1 = shape1.BoundBox
-            bbox2 = shape2.BoundBox
-            if (abs(bbox1.XLength - bbox2.XLength) > tolerance or
-                abs(bbox1.YLength - bbox2.YLength) > tolerance):
-                return False, "Different bounding box dimensions"
-            
-            # Compare vertices (allowing for different vertex order)
-            verts1 = sorted([(v.X, v.Y) for v in shape1.Vertexes])
-            verts2 = sorted([(v.X, v.Y) for v in shape2.Vertexes])
-            
-            for v1, v2 in zip(verts1, verts2):
-                if (abs(v1[0] - v2[0]) > tolerance or
-                    abs(v1[1] - v2[1]) > tolerance):
-                    return False, f"Vertex mismatch: {v1} vs {v2}"
-            
-            return True, "Sketches are geometrically equivalent"
-            
-        except Exception as e:
-            return False, f"Comparison failed: {str(e)}"
-    
-    def test_rectangle_equality(self):
-        # Create rectangles using different methods
-        self.create_rectangle1()
-        self.create_rectangle2()
-        
-        # Recompute both sketches
-        self.doc.recompute()
-        
-        # Compare the sketches
-        are_equal, message = self.are_sketches_equal(self.sketch1, self.sketch2)
-        
-        # Assert they are equal
-        self.assertTrue(are_equal, f"Rectangles should be equal. {message}")
-        
-        # Test with slightly different rectangle (negative test)
-        sketch3 = self.doc.addObject('Sketcher::SketchObject', 'Sketch3')
-        sketch3.addGeometry(Part.Rectangle(FreeCAD.Vector(0,0,0),
-                                         FreeCAD.Vector(10,20.1,0)))
-        self.doc.recompute()
-        
-        are_equal, message = self.are_sketches_equal(self.sketch1, sketch3)
-        self.assertFalse(are_equal, "Rectangles with different dimensions should not be equal")
-        
-    def tearDown(self):
-        FreeCAD.closeDocument("TestDoc")
-
-if __name__ == '__main__':
-    unittest.main()
+# Export common functions
+penup = turtle.penup
+pendown = turtle.pendown
+up = turtle.up
+down = turtle.down
+left = turtle.left
+right = turtle.right
+arc_left = turtle.arc_left
+diagonal_southwest = turtle.diagonal_southwest
+removeConstraint = turtle.removeConstraint
