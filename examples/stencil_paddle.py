@@ -3,7 +3,8 @@ import FreeCADGui as Gui
 import Part # type: ignore
 import Sketcher  # type: ignore
 from document import save_as
-from drawing import makeArcTwoPoints, penup, pendown, down, right, up, left, arcLeft
+#from drawing import arcLeft
+from turtlesketch import penup, pendown, down, right, up, arc_left
 
 def create():
     doc = App.newDocument()
@@ -25,7 +26,7 @@ def create():
     down(grip_height)
     right(grip_width)
     up(grip_height)
-    arcLeft(grip_width, outer_radius)
+    arc_left(grip_width, outer_radius)
     penup()
 
     doc.recompute()

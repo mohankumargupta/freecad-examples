@@ -87,24 +87,35 @@ class TurtleSketch:
             self._sketch.addConstraint(
                 Sketcher.Constraint(constraint_type, geo_id)
             )
-            
+
+         # Add distance constraints based on the movement type
+        if dx != 0:
+            self._sketch.addConstraint(
+                Sketcher.Constraint("DistanceX", geo_id, 1, geo_id, 2, abs(dx))
+            )
+        if dy != 0:
+            self._sketch.addConstraint(
+                Sketcher.Constraint("DistanceY", geo_id, 1, geo_id, 2, abs(dy))
+            )
+
         self._position = end_pos
+        return geo_id
 
     def up(self, distance: float) -> None:
         """Move turtle upward."""
-        self.move(0, distance, "Vertical")
+        return self.move(0, distance, "Vertical")
 
     def down(self, distance: float) -> None:
         """Move turtle downward."""
-        self.move(0, -distance, "Vertical")
+        return self.move(0, -distance, "Vertical")
 
     def left(self, distance: float) -> None:
         """Move turtle left."""
-        self.move(-distance, 0, "Horizontal")
+        return self.move(-distance, 0, "Horizontal")
 
     def right(self, distance: float) -> None:
         """Move turtle right."""
-        self.move(distance, 0, "Horizontal")
+        return self.move(distance, 0, "Horizontal")
 
     def arc_left(self, left_distance: float, radius: float) -> None:
         """Create an arc to the left with given radius."""
@@ -128,6 +139,18 @@ class TurtleSketch:
                 length
             )
 
+    def removeConstraint(self, geo_id: int, constraint_type: str ) -> None:
+        """Remove a specific type of constraint from a geometry element."""
+        if not self._sketch:
+            return
+
+        # Find the constraint index that matches both the type and geometry ID
+        for i, constraint in enumerate(self._sketch.Constraints):
+            if (constraint.Type == constraint_type and 
+                (constraint.First == geo_id or constraint.Second == geo_id)):
+                self._sketch.delConstraint(i)
+                break    
+
 # Create singleton instance
 turtle = TurtleSketch()
 
@@ -140,3 +163,4 @@ left = turtle.left
 right = turtle.right
 arc_left = turtle.arc_left
 diagonal_southwest = turtle.diagonal_southwest
+removeConstraint = turtle.removeConstraint
