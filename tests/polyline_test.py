@@ -4,7 +4,7 @@ import Part # type: ignore
 import pytest  
 
 from common import are_sketches_equal, are_sketches_geometrically_equal, create_rectangle, create_rectangle_80x40_fully_constrained
-from drawing import penup, pendown, left, right, up, down
+from turtlesketch import penup, pendown, left, right, up, down
 
 def test_rectangle(document_and_sketches):
     doc, sketch_expected, sketch_actual = document_and_sketches
