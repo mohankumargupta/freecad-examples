@@ -43,9 +43,9 @@ class TurtleSketch:
             constraints.append(
                 Sketcher.Constraint("Coincident", i, 2, i + 1, 1)
             )
-        constraints.append(
-                Sketcher.Constraint("Coincident", geometry_count - 1, 2, 0, 1)
-         )
+        # constraints.append(
+        #         Sketcher.Constraint("Coincident", geometry_count - 1, 2, 0, 1)
+        #  )
         
         # Close the shape
         if geometry_count > 0:
