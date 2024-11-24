@@ -113,6 +113,12 @@ def create_rectangle_80x40_fully_constrained(sketch):
     constraintList.append(Sketcher.Constraint('Horizontal', 2))
     constraintList.append(Sketcher.Constraint('Vertical', 1))
     constraintList.append(Sketcher.Constraint('Vertical', 3))
+    
+    constraintList.append(Sketcher.Constraint('DistanceX', -1, 1, 0,1, 5))
+    constraintList.append(Sketcher.Constraint('DistanceY', -1, 1, 0,1, 5))
+    
+    
+    
     sketch.addConstraint(constraintList)
     del constraintList
     
