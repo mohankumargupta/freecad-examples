@@ -416,14 +416,16 @@ def makeCenterArc(sketch, center_point, radius, start_angle, end_angle):
     return i  # Return the index of the created geometry    
 
 
-def makeArcTwoPoints(sketch, start_point, end_point, radius):
+def makeArcTwoPoints(sketch, start_point, end_point, radius, outside=True, mirror_center=False):
     """
     Creates an arc in the given sketch defined by two points and a radius.
 
     :param sketch: The FreeCAD Sketch object to which the arc will be added.
-    :param point1: A tuple (x1, y1) defining the first point of the arc.
-    :param point2: A tuple (x2, y2) defining the second point of the arc.
-    :param radius: The radius of the arc.
+    :param start_point: A tuple (x1, y1) defining the start point of the arc.
+    :param end_point: A tuple (x2, y2) defining the end point of the arc.
+    :param radius: The radius of the arc. Positive or negative indicates the direction.
+    :param outside: Whether the arc should be on the outside of the chord (True) or inside (False).
+    :param mirror_center: Whether to mirror the center point across the chord.
     :return: None
     """
     # Convert points to FreeCAD Vectors
@@ -444,13 +446,26 @@ def makeArcTwoPoints(sketch, start_point, end_point, radius):
     # Determine the direction of the perpendicular vector
     direction = (p2 - p1).cross(Vector(0, 0, 1)).normalize()
 
+    # Adjust the direction for outside/inside arc
+    if not outside:
+        direction = -direction
+
     # Compute the arc center
     center = midpoint + direction * perpendicular_distance * (1 if radius > 0 else -1)
 
-    # Add the arc to the sketch
-    #sketch.addArc(center.x, center.y, p1.x, p1.y, p2.x, p2.y, False)
+    # Mirror the center if needed
+    if mirror_center:
+        # Direction vector of the line
+        line_direction = (p2 - p1).normalize()
+        
+        # Reflect the center across the line
+        to_center = center - p1
+        projection = to_center.dot(line_direction) * line_direction
+        rejection = to_center - projection
+        mirrored_center = center - 2 * rejection
+        center = mirrored_center
 
-        # Create a circle in 2D with the calculated center and radius
+    # Create a circle in 2D with the calculated center and radius
     circle = Part.Circle(center, Vector(0, 0, 1), abs(radius))
 
     # Rotate p1 around the center by ±90 degrees to get a distinct third point
@@ -459,14 +474,11 @@ def makeArcTwoPoints(sketch, start_point, end_point, radius):
     rotation = App.Rotation(App.Vector(0, 0, 1), rotation_angle)
     third_point = center + rotation.multVec(vector_to_rotate)
 
-
     # Create an arc segment from the circle
     arc = Part.Arc(p1, third_point, p2)
 
     # Add the arc to the sketch
-    sketch.addGeometry(arc, False)
-    
-
+    return sketch.addGeometry(arc, False)
 
 #def diagonal(sketch, heading: float, start_point, horizontal_length: float, vertical_length: float):
 def diagonal(sketch, start_point,  heading: float, length):
@@ -507,7 +519,7 @@ def diagonal(sketch, start_point,  heading: float, length):
     line = Part.LineSegment(App.Vector(start_point), App.Vector(end_point))
     
     # Add the line to the sketch
-    sketch.addGeometry(line)    # Add the line to the document
+    return sketch.addGeometry(line)    # Add the line to the document
 
 
 

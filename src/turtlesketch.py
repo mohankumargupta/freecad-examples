@@ -145,27 +145,49 @@ class TurtleSketch:
         """Move turtle right."""
         return self.move(distance, 0, "Horizontal")
 
+    def moveTo(self, point):
+        x, y = point
+        self._position = Vector(x, y, 0)
+
+    def arc(self, second_point, radius:float, outside=True, mirror_centre=True):
+        x,y,_z = second_point
+        return  makeArcTwoPoints(
+            self._sketch,
+            (self._position.x, self._position.y, 0),
+            (x, y, 0),
+            radius,
+            outside,
+            mirror_center=mirror_centre
+        )
+
     def arc_left(self, left_distance: float, radius: float) -> None:
         """Create an arc to the left with given radius."""
         end_pos = Vector(self._position.x - left_distance, self._position.y, 0)
         
-        if hasattr(self, 'make_arc_two_points'):
-            makeArcTwoPoints(
-                self._sketch,
-                (self._position.x, self._position.y, 0),
-                (end_pos.x, end_pos.y, 0),
-                radius
-            )
+        makeArcTwoPoints(
+            self._sketch,
+            (self._position.x, self._position.y, 0),
+            (end_pos.x, end_pos.y, 0),
+            radius
+        )
+
+
 
     def diagonal_southwest(self, length: float) -> None:
-        """Move diagonally southwest."""
-        if hasattr(self, 'diagonal'):
-            diagonal(
+            return diagonal(
                 self._sketch,
                 (self._position.x, self._position.y, 0),
                 180 + 45,
                 length
             )
+    
+    def diagonal_northeast(self, length: float) -> None:
+        return diagonal(
+            self._sketch,
+            (self._position.x, self._position.y, 0),
+            45,
+            length
+        )
 
     def removeConstraint(self, geo_id: int, constraint_type: str ) -> None:
         """Remove a specific type of constraint from a geometry element."""
@@ -189,6 +211,9 @@ up = turtle.up
 down = turtle.down
 left = turtle.left
 right = turtle.right
-arc_left = turtle.arc_left
-diagonal_southwest = turtle.diagonal_southwest
+arcLeft = turtle.arc_left
+diagonalSouthWest = turtle.diagonal_southwest
+diagonalNorthEast = turtle.diagonal_northeast
 removeConstraint = turtle.removeConstraint
+moveTo = turtle.moveTo
+arc = turtle.arc

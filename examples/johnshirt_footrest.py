@@ -3,7 +3,7 @@ import FreeCADGui as Gui
 import Part # type: ignore
 import Sketcher  # type: ignore
 from document import save_as
-from drawing import penup, pendown, up, left, right, diagonalSouthWest
+from turtlesketch import penup, pendown, down, right, diagonalSouthWest, diagonalNorthEast ,moveTo, arc
 
 
 
@@ -19,11 +19,16 @@ def create():
     height = 50
     width = 70
 
-    pendown(sketch, (0, height))
-    up(height)
+    pendown(sketch, (0, 0))
     right(width)
-    diagonalSouthWest(20)
-    penup()
+    l1 = diagonalSouthWest(7)
+    moveTo((0,0))
+    down(height)
+    l2 = diagonalNorthEast(7)
+    endpoint = sketch.Geometry[l1].EndPoint
+    #arc(endpoint, radius=40, outside=False,  mirror_centre=False)
+    
+    #penup()
 
     doc.recompute()
     save_as(doc, __file__)

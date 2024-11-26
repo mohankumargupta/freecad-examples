@@ -6,14 +6,14 @@ import FreeCADGui as Gui
 #from example001a import create
 #from example001b import create
 #from example001c import create
-from example001d import create
+#from example001d import create
 #from example004 import create
 #from example005 import create
 #from example006 import create
 #from example007 import create
 #from stencil import create
 #from stencil_paddle import create
-#from johnshirt_footrest import create
+from johnshirt_footrest import create
 
 
 #freecad_file = "examples/example004.FCstd"
