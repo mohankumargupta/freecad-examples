@@ -119,11 +119,11 @@ class TurtleSketch:
          # Add distance constraints based on the movement type
         if dx != 0:
             self._sketch.addConstraint(
-                Sketcher.Constraint("DistanceX", geo_id, 1, geo_id, 2, abs(dx))
+                Sketcher.Constraint("Distance", geo_id, 1, geo_id, 2, abs(dx))
             )
         if dy != 0:
             self._sketch.addConstraint(
-                Sketcher.Constraint("DistanceY", geo_id, 1, geo_id, 2, abs(dy))
+                Sketcher.Constraint("Distance", geo_id, 1, geo_id, 2, abs(dy))
             )
 
         self._position = end_pos
